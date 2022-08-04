@@ -64,7 +64,7 @@ loss_func = sm.losses.categorical_focal_dice_loss
 model.compile(optimizer="adam", loss=loss_func, metrics=[iou_score])
 
 # train model
-is_train = False
+is_train = parameter_cfg.model_train.model_phase == "train"
 if is_train:
     filepath=CHECKPOINT_PATH
     callback = ModelCheckpoint(filepath, monitor="val_iou_score", verbose=1, save_best_only=True, mode="max")

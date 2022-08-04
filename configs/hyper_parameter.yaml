@@ -6,3 +6,5 @@ model_train:
   number_epochs: 50
 
   framework: tf.keras
+
+  model_phase: eval
