@@ -4,3 +4,4 @@ tensorflow
 opencv-python
 segmentation_models
 pillow
+tqdm
