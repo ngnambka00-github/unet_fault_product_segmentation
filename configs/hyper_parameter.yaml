@@ -1,0 +1,8 @@
+model_train: 
+  backbone: resnet34
+  input_weight: 512
+  input_height: 512
+  batch_size: 16
+  number_epochs: 50
+
+  framework: tf.keras

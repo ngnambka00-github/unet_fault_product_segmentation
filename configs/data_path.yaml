@@ -1,0 +1,6 @@
+data: 
+  download_url: http://j.gs/GTao
+  data_path: dataset/
+
+model: 
+  checkpoint: model/checkpoint.hdf5

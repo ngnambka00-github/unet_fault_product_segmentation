@@ -1,35 +1,41 @@
-
 from sklearn.model_selection import train_test_split
 import os
 import random
 import matplotlib.pyplot as plt
-
 import tensorflow as tf
 from keras.callbacks import ModelCheckpoint
 import cv2
 import numpy as np
 from utils import DataLoader, Dataset, load_path
-
 import warnings
 warnings.filterwarnings("ignore")
-
-# Import thu vien segmentation_models
 from segmentation_models.metrics import iou_score
 from segmentation_models import Unet
 import segmentation_models as sm
-sm.set_framework("tf.keras")
-sm.framework()
+from hydra import initialize, compose
+from omegaconf import OmegaConf
 
-BACKBONE = "resnet34"
+HOME_PATH = "../"
+with initialize(config_path="../configs/"):
+    data_cfg = compose(config_name="data_path")
+    parameter_cfg = compose(config_name="hyper_parameter")
+data_cfg = OmegaConf.create(data_cfg)
+parameter_cfg = OmegaConf.create(parameter_cfg)
+
+CHECKPOINT_PATH = os.path.join(HOME_PATH, data_cfg.model.checkpoint)
+
+# Import thu vien segmentation_models
+sm.set_framework(parameter_cfg.model_train.framework)
+sm.framework()
+BACKBONE = parameter_cfg.model_train.backbone
 preprocessing_input = sm.get_preprocessing(BACKBONE)
 
 # Dinh nghia bien
-data_path = "../dataset"
-w, h = 512, 512
-batch_size = 16
-no_epochs = 50
+data_path = os.path.join(HOME_PATH, data_cfg.data.data_path)
+w, h = parameter_cfg.model_train.input_weight, parameter_cfg.model_train.input_height
+batch_size = parameter_cfg.model_train.batch_size
+no_epochs = parameter_cfg.model_train.number_epochs
 
-# thuc hien load va train model
 # load duong dan
 image_path, mask_path = load_path(data_path)
 
@@ -58,9 +64,9 @@ loss_func = sm.losses.categorical_focal_dice_loss
 model.compile(optimizer="adam", loss=loss_func, metrics=[iou_score])
 
 # train model
-is_train = True
+is_train = False
 if is_train:
-    filepath="../model/checkpoint.hdf5"
+    filepath=CHECKPOINT_PATH
     callback = ModelCheckpoint(filepath, monitor="val_iou_score", verbose=1, save_best_only=True, mode="max")
     model.fit(
         train_loader,
@@ -70,7 +76,7 @@ if is_train:
     )
 else: 
     # load model de test
-    model.load_weights("../model/checkpoint.hdf5")
+    model.load_weights(CHECKPOINT_PATH)
     
     ids = range(len(image_test))
     indexes = random.sample(ids, 10)
